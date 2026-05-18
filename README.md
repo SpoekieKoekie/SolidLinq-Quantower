@@ -20,9 +20,9 @@ See **[`docs/discovery.md`](./docs/discovery.md)** for the five-way mapping (inb
 
 | Path | Purpose |
 |------|---------|
-| `src/SolidLinq.Quantower.Bridge/` | **netstandard2.0** shared library — hub WebSocket client (`HubBridgeClient`), `HubDispatchMessage`, `CoreAckClient`, `LoggingStubExecutor` |
+| `src/SolidLinq.Quantower.Bridge/` | **net8.0** shared library — hub WebSocket client (`HubBridgeClient`), `HubDispatchMessage`, `CoreAckClient`, `LoggingStubExecutor` |
 | `src/SolidLinq.Quantower/` | .NET 8 **console** host (WS + HTTP; uses Bridge + stub executor for smoke tests) |
-| `src/SolidLinq.Quantower.Algo/` | **Quantower Algo** strategy (`SolidLinqBridgeStrategy`) — runs inside Quantower; references Bridge + `TradingPlatform.BusinessLayer` from your install (see below) |
+| `src/SolidLinq.Quantower.Algo/` | **net8.0** Quantower Algo strategy (`SolidLinqBridgeStrategy`) — runs inside Quantower 1.145+ style SDKs; references Bridge + `TradingPlatform.BusinessLayer` from your install (see below) |
 | `docs/discovery.md` | Structured discovery report |
 
 ## Build
@@ -33,11 +33,11 @@ See **[`docs/discovery.md`](./docs/discovery.md)** for the five-way mapping (inb
 dotnet build SolidLinq.Quantower.sln
 ```
 
-**Quantower strategy DLL** (requires `TradingPlatform.BusinessLayer.dll` on your machine — set `QUANTOWER_ALGO_SDK` to that folder, or pass MSBuild property `QuantowerSdkDir`):
+**Quantower strategy DLL** (requires `TradingPlatform.BusinessLayer.dll` — same major .NET generation as Quantower, typically **.NET 8** for recent builds). Set `QUANTOWER_ALGO_SDK` to that folder, or pass MSBuild property `QuantowerSdkDir`:
 
 ```bash
 # PowerShell example
-$env:QUANTOWER_ALGO_SDK = "C:\Path\To\Folder\Containing\TradingPlatform.BusinessLayer.dll"
+$env:QUANTOWER_ALGO_SDK = "D:\AMP Quantower\TradingPlatform\v1.145.3\bin"
 dotnet build src/SolidLinq.Quantower.Algo/SolidLinq.Quantower.Algo.csproj -c Release
 ```
 

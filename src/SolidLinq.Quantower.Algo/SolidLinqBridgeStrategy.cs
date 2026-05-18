@@ -19,10 +19,10 @@ namespace SolidLinq.Quantower.Algo;
 public sealed class SolidLinqBridgeStrategy : Strategy, ICurrentAccount, ICurrentSymbol
 {
     [InputParameter("Symbol", 0)]
-    public Symbol CurrentSymbol { get; set; }
+    public Symbol CurrentSymbol { get; set; } = null!;
 
     [InputParameter("Account", 1)]
-    public Account CurrentAccount { get; set; }
+    public Account CurrentAccount { get; set; } = null!;
 
     [InputParameter("WebSocket URL", 2)]
     public string WebSocketUrl { get; set; } = "";
@@ -42,11 +42,11 @@ public sealed class SolidLinqBridgeStrategy : Strategy, ICurrentAccount, ICurren
     [InputParameter("Hub protocol version", 7, minimum: 1, maximum: 2, increment: 1, decimalPlaces: 0)]
     public int ProtocolVersion { get; set; } = 2;
 
-    public override string[] MonitoringConnectionsIds => new[]
-    {
-        this.CurrentSymbol?.ConnectionId,
-        this.CurrentAccount?.ConnectionId
-    };
+    public override string[] MonitoringConnectionsIds =>
+        new[] { this.CurrentSymbol?.ConnectionId, this.CurrentAccount?.ConnectionId }
+            .Where(static s => !string.IsNullOrEmpty(s))
+            .Select(s => s!)
+            .ToArray();
 
     private CancellationTokenSource? _cts;
     private Task? _hubTask;
