@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>SolidLinq.Quantower.Algo</RootNamespace>
+    <AssemblyName>SolidLinq.Quantower.Algo</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <QuantowerSdkDir Condition="'$(QuantowerSdkDir)' == ''">$(QUANTOWER_ALGO_SDK)</QuantowerSdkDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SolidLinq.Quantower.Bridge\SolidLinq.Quantower.Bridge.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(QuantowerSdkDir)' != '' AND Exists('$(QuantowerSdkDir)\TradingPlatform.BusinessLayer.dll')">
+    <Reference Include="TradingPlatform.BusinessLayer">
+      <HintPath>$(QuantowerSdkDir)\TradingPlatform.BusinessLayer.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="CheckQuantowerSdk" BeforeTargets="CoreCompile">
+    <Error
+      Condition="'$(QuantowerSdkDir)' == '' OR !Exists('$(QuantowerSdkDir)\TradingPlatform.BusinessLayer.dll')"
+      Text="Set MSBuild property QuantowerSdkDir or environment variable QUANTOWER_ALGO_SDK to the folder that contains TradingPlatform.BusinessLayer.dll from your Quantower installation." />
+  </Target>
+</Project>

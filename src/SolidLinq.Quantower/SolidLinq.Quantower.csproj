@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SolidLinq.Quantower</RootNamespace>
+    <AssemblyName>SolidLinq.Quantower</AssemblyName>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SolidLinq.Quantower.Bridge\SolidLinq.Quantower.Bridge.csproj" />
+  </ItemGroup>
+</Project>
