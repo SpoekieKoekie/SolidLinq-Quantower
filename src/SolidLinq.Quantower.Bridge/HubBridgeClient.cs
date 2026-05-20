@@ -21,7 +21,9 @@ public sealed class HubBridgeClient : IAsyncDisposable
     private readonly BridgeOptions _options;
     private readonly CoreAckClient _ackClient;
     private readonly IHubOrderExecutor _executor;
-    private readonly ConcurrentDictionary<string, byte> _handledIdempotency = new ConcurrentDictionary<string, byte>();
+    /// <summary>Same hub command id may be ignored only for 30s (not permanently).</summary>
+    private readonly TimedCommandDedupe _commandDedupe = new(TimeSpan.FromSeconds(30));
+    private ClientWebSocket? _activeSocket;
 
     public HubBridgeClient(BridgeOptions options, CoreAckClient ackClient, IHubOrderExecutor executor)
     {
@@ -65,10 +67,28 @@ public sealed class HubBridgeClient : IAsyncDisposable
         }
     }
 
+    public bool TrySendPositionClosedMirror(string json)
+    {
+        var ws = _activeSocket;
+        if (ws == null || ws.State != WebSocketState.Open) return false;
+        try
+        {
+            var bytes = Encoding.UTF8.GetBytes(json);
+            _ = ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public async Task RunSessionAsync(CancellationToken ct)
     {
         using var ws = new ClientWebSocket();
         await ws.ConnectAsync(_options.WebSocketUrl, ct).ConfigureAwait(false);
+        _activeSocket = ws;
+        HubPnlMirror.TrySendCore = TrySendPositionClosedMirror;
 
         var hello = new Dictionary<string, object?>
         {
@@ -78,22 +98,33 @@ public sealed class HubBridgeClient : IAsyncDisposable
             ["authToken"] = _options.AuthToken,
             ["platform"] = _options.Platform
         };
-        await SendJsonAsync(ws, hello, ct).ConfigureAwait(false);
-
-        var buffer = new byte[64 * 1024];
-        while (!ct.IsCancellationRequested)
+        try
         {
-            var ms = new MemoryStream();
-            WebSocketReceiveResult seg;
-            do
-            {
-                seg = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), ct).ConfigureAwait(false);
-                if (seg.MessageType == WebSocketMessageType.Close) return;
-                ms.Write(buffer, 0, seg.Count);
-            } while (!seg.EndOfMessage);
+            await SendJsonAsync(ws, hello, ct).ConfigureAwait(false);
 
-            var text = Encoding.UTF8.GetString(ms.ToArray());
-            await HandleIncomingAsync(ws, text, ct).ConfigureAwait(false);
+            var buffer = new byte[64 * 1024];
+            while (!ct.IsCancellationRequested)
+            {
+                var ms = new MemoryStream();
+                WebSocketReceiveResult seg;
+                do
+                {
+                    seg = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), ct).ConfigureAwait(false);
+                    if (seg.MessageType == WebSocketMessageType.Close) return;
+                    ms.Write(buffer, 0, seg.Count);
+                } while (!seg.EndOfMessage);
+
+                var text = Encoding.UTF8.GetString(ms.ToArray());
+                await HandleIncomingAsync(ws, text, ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            if (ReferenceEquals(_activeSocket, ws))
+            {
+                _activeSocket = null;
+                HubPnlMirror.TrySendCore = null;
+            }
         }
     }
 
@@ -120,8 +151,10 @@ public sealed class HubBridgeClient : IAsyncDisposable
         var cmd = JsonSerializer.Deserialize<HubDispatchMessage>(text, JsonParse);
         if (cmd == null || string.IsNullOrWhiteSpace(cmd.Id)) return;
 
-        var dedupeKey = string.IsNullOrWhiteSpace(cmd.IdempotencyKey) ? cmd.Id! : cmd.IdempotencyKey!;
-        if (!_handledIdempotency.TryAdd(dedupeKey, 0)) return;
+        var kind = (cmd.Type ?? "order").Trim().ToLowerInvariant();
+        var dedupeKey = $"{cmd.Id!.Trim()}:{kind}";
+        if (!_commandDedupe.TryAccept(dedupeKey))
+            return;
 
         var sw = Stopwatch.StartNew();
         ExecutionResult result;
@@ -148,7 +181,12 @@ public sealed class HubBridgeClient : IAsyncDisposable
 
         if (result.ClosedTradePayload is not null)
         {
-            await _ackClient.PostClosedTradeAsync(_options.CoreBaseUrl, _options.BridgeInstanceId, result.ClosedTradePayload, ct)
+            await _ackClient.PostClosedTradeAsync(
+                    _options.CoreBaseUrl,
+                    _options.BridgeInstanceId,
+                    result.ClosedTradePayload,
+                    _options.AuthToken,
+                    ct)
                 .ConfigureAwait(false);
         }
     }

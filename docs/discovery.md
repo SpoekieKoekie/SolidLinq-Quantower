@@ -36,7 +36,7 @@ Handled in Core Worker; updates D1 event row via `updateEventBrokerMs`.
 
 **Before this work:** none under `New-SolidLinq-Flow`.
 
-**After scaffold:** [`SolidLinq-Quantower/src/SolidLinq.Quantower/`](../src/SolidLinq.Quantower/) — .NET 8 console host; **`SolidLinq-Quantower/src/SolidLinq.Quantower.Bridge/`** — shared WS/HTTP bridge (**net8.0**); **`SolidLinq-Quantower/src/SolidLinq.Quantower.Algo/`** — Quantower-hosted `SolidLinqBridgeStrategy` (**net8.0**; build with `QUANTOWER_ALGO_SDK`). Wire **TradingPlatform.BusinessLayer** via `QUANTOWER_ALGO_SDK` when building the algo project (see Quantower README).
+**After scaffold:** [`SolidLinq-Quantower/src/SolidLinq.Quantower/`](../src/SolidLinq.Quantower/) — .NET 8 console host; **`SolidLinq-Quantower/src/SolidLinq.Quantower.Bridge/`** — shared WS/HTTP bridge (**net8.0**); **`SolidLinq-Quantower/src/SolidLinq.Quantower.Algo/`** — Quantower-hosted `SolidLinqBridgeStrategy` (**net8.0**): URLs from `%LocalAppData%\SolidLinq\quantower-bridge.json` (or custom path), HTTP Bearer = bridge auth only (no worker token). See **[`docs/quantower-bridge.example.json`](../docs/quantower-bridge.example.json)**.
 
 ## 5. Broker / account / symbol mapping rules
 

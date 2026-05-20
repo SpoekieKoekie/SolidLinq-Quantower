@@ -1,0 +1,4 @@
+{
+  "webSocketUrl": "wss://ws.solidlinq.com/ws/your-link-id-or-bridge-path",
+  "coreBaseUrl": "https://core.solidlinq.com"
+}

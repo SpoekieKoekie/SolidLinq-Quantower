@@ -41,7 +41,11 @@ $env:QUANTOWER_ALGO_SDK = "D:\AMP Quantower\TradingPlatform\v1.145.3\bin"
 dotnet build src/SolidLinq.Quantower.Algo/SolidLinq.Quantower.Algo.csproj -c Release
 ```
 
-Copy `SolidLinq.Quantower.Algo.dll` **and** `SolidLinq.Quantower.Bridge.dll` to the Quantower **Scripts** / Algo extensions folder per Quantower’s “custom strategy” workflow, then add **SolidLinq Bridge** from the UI and fill the same parameters as in [`Prompt/Quantower.md`](../SolidLinq-Dashboard/Prompt/Quantower.md) (WS URL from dashboard bridge generate, core base URL, instance id, tokens, hub protocol version).
+Copy `SolidLinq.Quantower.Algo.dll` **and** `SolidLinq.Quantower.Bridge.dll` into Quantower’s **Strategies** folder, or run **`scripts/Deploy-QuantowerAlgo.ps1`**. **Restart Quantower** (or remove/re-add the strategy) so settings refresh.
+
+**Quantower UI** matches cBot: Symbol, Account, Bridge Instance Id, Auth Token, Lot Multiplier, SL/TP toggles & multipliers, SL Mode, daily/weekly limits & targets, overall max loss/profit, drawdown mode, equity option, stop/close on hit, manual unlock. **Not in UI:** WebSocket URL, Core base URL, Worker API token (hosts are built into the DLL).
+
+Confirm deploy: log line **`build 2026-05-19-cbot-ui`**. If you still see WebSocket URL / Worker API token, an old DLL is loaded.
 
 Run console (example):
 
@@ -51,11 +55,10 @@ dotnet run -- \
   --ws wss://your-core.example/ws/bridge/your-bridge-instance-uuid \
   --bridge-instance-id your-bridge-instance-uuid \
   --auth-token from-dashboard-bridge-generate \
-  --core https://your-core.example \
-  --worker-token YOUR_WORKER_API_TOKEN
+  --core https://your-core.example
 ```
 
-The **in-terminal strategy** is `SolidLinqBridgeStrategy`; the console remains useful for protocol smoke tests with `LoggingStubExecutor`.
+Optional: `--worker-token` overrides the HTTP Bearer for the console smoke test only (advanced); otherwise the console uses `--auth-token` for REST as well.
 
 ## Related repos
 
