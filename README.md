@@ -1,3 +1,10 @@
+---
+second-brain-id:
+  - 74861748-64f7-413f-b834-8c803260f499
+  - 6d25c5aa-16fb-42cc-a637-367bf844c037
+  - 7cf8254b-a268-47dd-9bae-a5edbb943e52
+second-brain-synced: July 14, 2026 - 8:54 PM GMT+2
+---
 # SolidLinq-Quantower
 
 C# host and scaffold for a **Quantower** terminal integration with **SolidLinq-Core**: receive normalized orders over the same **WebSocket bridge** protocol as MT5 / cTrader / NinjaTrader, optionally execute via Quantower’s **TradingPlatform.BusinessLayer**, and report back using Core’s existing HTTP endpoints.

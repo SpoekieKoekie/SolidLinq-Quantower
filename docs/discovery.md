@@ -1,3 +1,12 @@
+---
+second-brain-id:
+  - 4ab5a4c9-e9ca-471c-a17d-2aa2416a91eb
+  - f6666199-e85c-4fe4-bf8c-a78b93a9969b
+  - d630971d-5405-4343-bbd3-3376a0863e30
+  - e996b140-af30-4732-894e-9ef1d40f2b6f
+  - e11558bc-1579-44a5-80a8-ae0ffbf37cf4
+second-brain-synced: July 14, 2026 - 8:54 PM GMT+2
+---
 # Quantower integration — discovery report
 
 Structured answers to **Prompt/Quantower.md** § “Discovery task”, using **repository evidence only** (SolidLinq-Core + SolidLinq-Dashboard). Canonical narrative and constraints remain in **[`SolidLinq-Dashboard/Prompt/Quantower.md`](../../SolidLinq-Dashboard/Prompt/Quantower.md)**.
